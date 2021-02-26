@@ -9,7 +9,7 @@ import BarChartByTime from '../components/BarChartByTime'
 import counties from '../utils/counties.json'
 import topology from '../public/topologies/brazil.json'
 
-import fetchAllReports, { requestOptions } from '../utils/fetchAllReports'
+import fetchAllReports, { fetchFromCSV, requestOptions } from '../utils/fetchAllReports'
 import { CountrySumReport, Report } from '../utils/types'
 import { totalSumByDay, countiesVariation, filterReportsByCounty } from '../utils/filters';
 import CustomMap from '../components/Country/CustomMap';
@@ -94,7 +94,7 @@ export async function getStaticProps() {
   // ? Atualiza os recentes
   const lastReports = reports.filter(({ is_last: isLast }) => isLast)
   // ? Soma total diária do PAÍS
-
+  // const a = fetchFromCSV()
   // Todo: Variável de casos/ mortes nos últimos dias
   const lastWeek = countiesVariation(reports)
 

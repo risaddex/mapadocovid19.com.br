@@ -1,6 +1,12 @@
-import { Report, CountrySumReport, lastAverageReports, dataRange } from './types';
 import compareAsc from 'date-fns/compareAsc'
 import counties from '../utils/counties.json'
+import {
+  CountrySumReport,
+  dataRange,
+  Report,
+  lastAverageReports,
+} from './types'
+import { customToFixed, growPercent } from './utils'
 
 export function totalSumByDay(reports: Report[]): CountrySumReport[] {
   return reports
@@ -39,25 +45,17 @@ export function filterReportsByCounty(reports: Report[]) {
     }
     return acc
   }, {})
-  
+
   return result
 }
 
- interface lastAverageReports {
-  last_week_avg: number
-  last_month_avg: number
-  oscilation: -1 | 0 | 1
-  oscilationPercent?: number
-  newConfirmedAvg: number
-  newDeathsAvg: number
-}
-
-export function countiesVariation (reports: Report[], period = dataRange.LAST_WEEK) {
-
-  const data = Object.entries(filterReportsByCounty(reports))
-  const result = data.map((item: [string, Report[]], index) => ({
-    state: item[0],
-    data: item[1].slice(-period).reduce((acc, i):lastAverageReports[] => {
+export function getStatsByCounty(reports: Report[], period: dataRange) {
+  return reports
+    .sort((first, second) =>
+      compareAsc(new Date(first.date), new Date(second.date))
+    )
+    .slice(-period)
+    .reduce((acc, i): lastAverageReports[] => {
       const index = acc.indexOf(acc.find((obj) => obj.state === acc.state))
       if (index >= 0) {
         acc[index].newConfirmed += i.new_confirmed
@@ -67,21 +65,44 @@ export function countiesVariation (reports: Report[], period = dataRange.LAST_WE
           last_update: i.date,
           newConfirmed: i.new_confirmed,
           newDeaths: i.new_deaths,
+          lastDeaths: i.new_deaths,
+          lastConfirmed: i.new_confirmed,
         })
       }
       return acc
     }, [])
-    
-  }))
-
-  console.log(...result)
-  return result
 }
 
+export function countiesVariation(
+  reports: Report[],
+  period = dataRange.LAST_WEEK
+):lastAverageReports {
+  const data = Object.entries(filterReportsByCounty(reports))
+  const counties_data = data.map((item: [string, Report[]]) => ({
+    state: item[0],
+    data: getStatsByCounty(item[1], period),
+  }))
+  const result = counties_data.map((item) => ({
+    state: item.state,
+    data: item.data.map(
+      ({ newDeaths, newConfirmed, lastDeaths, lastConfirmed }) => ({
+        deaths_avg: customToFixed(newDeaths / period),
+        new_confirmed_avg: customToFixed(newConfirmed / period),
+        last_deaths: lastDeaths,
+        last_confirmed: lastConfirmed,
+        oscilation: function () {
+          const dif = lastDeaths / customToFixed(newDeaths / period)
+          if (dif > 0.85 && dif < 1.15) {
+            return 0
+          } else if (dif > 1.15) {
+            return 1
+          } else return -1
+        }(),
+      })
+    ),
+  }))
 
-
-const states = counties.map(({ initials }) => ({
-  state: initials,
-  data: [],
-}))
-
+  console.log(result[1])
+  // TODO understand return types better XD
+  return result
+}

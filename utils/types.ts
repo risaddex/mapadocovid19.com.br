@@ -28,16 +28,21 @@ export interface CountrySumReport {
   newDeaths: number
 }
 
+export type data =  {
+  deaths_avg: number,
+  new_confirmed_avg: number,
+  last_deaths: number,
+  last_confirmed: number,
+  oscilation:  -1 | 0 | 1
+}
+
 export interface lastAverageReports {
-  last_week_avg: number
-  oscilation: -1 | 0 | 1
-  oscilationPercent?: number
-  newConfirmedAvg: number
-  newDeathsAvg: number
+  state: string
+  data: data[]
 }
 
 export enum dataRange {
   LAST_WEEK = 7,
   LAST_FORTNIGHT = 14,
-  LAST_MONTH = 30
+  LAST_MONTH = 30,
 }
