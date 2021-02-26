@@ -11,7 +11,7 @@ import topology from '../public/topologies/brazil.json'
 
 import fetchAllReports, { requestOptions } from '../utils/fetchAllReports'
 import { CountrySumReport, Report } from '../utils/types'
-import { totalSumByDay } from '../utils/filters'
+import { totalSumByDay, countiesVariation, filterReportsByCounty } from '../utils/filters';
 import CustomMap from '../components/Country/CustomMap';
 
 interface HomeProps {
@@ -96,17 +96,11 @@ export async function getStaticProps() {
   // ? Soma total diária do PAÍS
 
   // Todo: Variável de casos/ mortes nos últimos dias
-  
+  const lastWeek = countiesVariation(reports)
+
   const countrySumByDay = totalSumByDay(reports)
   // ? Boletins por ESTADO
-  const reportsByCounty = reports.reduce((acc, report) => {
-    if (typeof acc[report.state] === 'object') {
-      acc[report.state].push(report)
-    } else {
-      acc[report.state] = [report]
-    }
-    return acc
-  }, {})
+  const reportsByCounty = filterReportsByCounty(reports)
   // ? boletins Anteriores
   // const previousReports = counties.map(({ initials }) =>
   //   reports.find((report) => report.state === initials && !report.is_last)

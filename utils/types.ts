@@ -35,3 +35,9 @@ export interface lastAverageReports {
   newConfirmedAvg: number
   newDeathsAvg: number
 }
+
+export enum dataRange {
+  LAST_WEEK = 7,
+  LAST_FORTNIGHT = 14,
+  LAST_MONTH = 30
+}
